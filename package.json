@@ -1,0 +1,25 @@
+{
+  "name": "ismylandlordnice",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "live-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stanleynguyen/ismylandlordnice.git"
+  },
+  "author": "Stanley Nguyen <hung.ngn.the@gmail.com>",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/stanleynguyen/ismylandlordnice/issues"
+  },
+  "homepage": "https://github.com/stanleynguyen/ismylandlordnice#readme",
+  "devDependencies": {
+    "live-server": "^1.2.1",
+    "parcel-bundler": "^1.12.4"
+  },
+  "dependencies": {}
+}

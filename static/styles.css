@@ -1,0 +1,38 @@
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap');
+body * {
+  font-family: 'Nanum Gothic', sans-serif;
+}
+
+.search-box {
+  width: 30vw;
+  min-width: 400px;
+}
+
+.header {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  justify-content: center;
+}
+.header .header-content {
+  max-height: fit-content;
+}
+.header .header-pusher {
+  flex: 0;
+  transition: flex 1s;
+}
+.header .header-pusher img {
+  max-width: 200px;
+  display: none;
+}
+.header:hover .header-pusher {
+  flex: auto;
+}
+.header:hover .header-pusher img {
+  display: inherit;
+}
+.header .header-content h1 {
+  font-family: 'Nanum Pen Script', cursive;
+  font-size: 4rem;
+}
