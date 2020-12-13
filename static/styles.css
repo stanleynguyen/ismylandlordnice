@@ -1,5 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 body * {
   font-family: 'Nanum Gothic', sans-serif;
 }
@@ -26,13 +29,49 @@ body * {
   max-width: 200px;
   display: none;
 }
-.header:hover .header-pusher {
+.header.active .header-pusher {
   flex: auto;
 }
-.header:hover .header-pusher img {
+.header.active .header-pusher img {
   display: inherit;
 }
 .header .header-content h1 {
   font-family: 'Nanum Pen Script', cursive;
   font-size: 4rem;
+}
+
+.header #map-container {
+  display: none;
+}
+.header.active #map-container {
+  display: block;
+}
+#map-container .review-header {
+  width: 100%;
+  padding: 10px;
+}
+
+.header:not(.active) .md:block {
+  display: none;
+}
+
+#address {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+#map {
+  height: 300px;
+  width: 500px;
+  margin-bottom: 50px;
+}
+
+.review {
+  width: 100%;
+  margin-bottom: 50px;
+}
+.review > * {
+  margin-top: 10px;
+  padding-right: 10px;
+  padding-left: 10px;
 }

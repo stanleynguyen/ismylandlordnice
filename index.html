@@ -2,7 +2,6 @@
 
 <head>
     <title>ismylandlordnice</title>
-    <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
     <link href="static/styles.css" rel="stylesheet" />
     <link rel="preload" href="static/loading.gif" as="img" />
 </head>
@@ -17,22 +16,108 @@
                 too
             </h3>
             <div class="pt-2 grid-rows-6 relative mx-auto text-gray-600 mt-5 mb-10">
-                <input
-                    class="border-2 border-gray-300 bg-white h-10 px-5 pr-10 rounded-lg text-sm focus:outline-none search-box"
-                    type="text" name="postal" placeholder="Enter a Singapore postal code">
-                <button type="submit" class="absolute right-0 top-0 mt-5 mr-4">
-                    <svg class="text-gray-600 h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg"
-                        xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px"
-                        viewBox="0 0 56.966 56.966" style="enable-background:new 0 0 56.966 56.966;"
-                        xml:space="preserve" width="512px" height="512px">
-                        <path
-                            d="M55.146,51.887L41.588,37.786c3.486-4.144,5.396-9.358,5.396-14.786c0-12.682-10.318-23-23-23s-23,10.318-23,23  s10.318,23,23,23c4.761,0,9.298-1.436,13.177-4.162l13.661,14.208c0.571,0.593,1.339,0.92,2.162,0.92  c0.779,0,1.518-0.297,2.079-0.837C56.255,54.982,56.293,53.08,55.146,51.887z M23.984,6c9.374,0,17,7.626,17,17s-7.626,17-17,17  s-17-7.626-17-17S14.61,6,23.984,6z" />
-                    </svg>
-                </button>
+                <form id="search">
+                    <input
+                        class="border-2 border-gray-300 bg-white h-10 px-5 pr-10 rounded-lg text-sm focus:outline-none search-box"
+                        type="text" name="postal" placeholder="Search for a place in Singapore">
+                    <button type="submit" class="absolute right-0 top-0 mt-5 mr-4">
+                        <svg class="text-gray-600 h-4 w-4 fill-current" xmlns="http://www.w3.org/2000/svg"
+                            xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" id="Capa_1" x="0px" y="0px"
+                            viewBox="0 0 56.966 56.966" style="enable-background:new 0 0 56.966 56.966;"
+                            xml:space="preserve" width="512px" height="512px">
+                            <path
+                                d="M55.146,51.887L41.588,37.786c3.486-4.144,5.396-9.358,5.396-14.786c0-12.682-10.318-23-23-23s-23,10.318-23,23  s10.318,23,23,23c4.761,0,9.298-1.436,13.177-4.162l13.661,14.208c0.571,0.593,1.339,0.92,2.162,0.92  c0.779,0,1.518-0.297,2.079-0.837C56.255,54.982,56.293,53.08,55.146,51.887z M23.984,6c9.374,0,17,7.626,17,17s-7.626,17-17,17  s-17-7.626-17-17S14.61,6,23.984,6z" />
+                        </svg>
+                    </button>
+                </form>
             </div>
         </div>
         <div class="header-pusher flex flex-col items-center">
-            <img src="static/loading.gif" />
+            <div class="container mx-auto" id="map-container">
+                <div class="flex flex-col items-center">
+                    <h3 id="address"></h3>
+                    <div id="map" class="hidden md:block"></div>
+                    <div class="flex items-center justify-between review-header">
+                        <h3 class="text-2xl font-bold">All nearby reviews </h3><button type="button"
+                            class="modal-open border border-indigo-500 bg-indigo-500 text-white rounded-md px-4 py-2 m-2 transition duration-500 ease select-none hover:bg-indigo-600 focus:outline-none focus:shadow-outline">
+                            Submit A Review
+                        </button>
+                    </div>
+                    <div class="review" id="review"></div>
+                </div>
+            </div>
+            <img src="static/loading.gif" id="loading" />
         </div>
     </div>
+
+    <!--Modal-->
+    <div class="modal opacity-0 pointer-events-none fixed w-full h-full top-0 left-0 flex items-center justify-center">
+        <div class="modal-overlay absolute w-full h-full bg-gray-900 opacity-50"></div>
+
+        <div class="modal-container bg-white w-11/12 md:max-w-2xl mx-auto rounded shadow-lg z-50 overflow-y-auto">
+
+            <!-- Add margin if you want to see some of the overlay behind the modal-->
+            <div class="modal-content py-4 text-left px-6">
+                <!--Title-->
+                <div class="flex justify-between items-center pb-3">
+                    <p class="text-2xl font-bold">Submit a landlord review</p>
+                    <div class="modal-close cursor-pointer z-50">
+                        <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                            viewBox="0 0 18 18">
+                            <path
+                                d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z">
+                            </path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!--Body-->
+                <form id="review-form">
+                    <div class="grid grid-cols-1 gap-6">
+                        <label class="block">
+                            <span class="text-gray-700">Full address</span>
+                            <div class="w-full block">
+                                <input type="text"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 disabled:bg-gray-100 disabled:border-transparent"
+                                    placeholder="Formatted address" name="formatted_address" disabled required>
+                                <input type="number" step="any" hidden name="lat" />
+                                <input type="number" step="any" hidden name="lng" />
+                            </div>
+                            <div class="w-full block">
+                                <span>#</span>
+                                <input type="text"
+                                    class="mt-1 inline-block w-quarter rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                    name="floor" placeholder="Floor" required>
+                                <span>-</span>
+                                <input type="text"
+                                    class="mt-1 inline-block w-quarter rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                    name="unit_number" placeholder="Unit number" required>
+                            </div>
+                        </label>
+                        <label class="block">
+                            <span class="text-gray-700">Write your review</span>
+                            <textarea
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
+                                placeholder="Feedback about landlord" rows="3" name="review_text" required></textarea>
+                        </label>
+                    </div>
+                    <span class="flex items-center text-red-500 text-sm mt-1 ml-1 hidden" id="error-message">
+                        Invalid username field !
+                    </span>
+                    <!--Footer-->
+                    <div class="flex justify-end pt-2">
+                        <button type="button"
+                            class="modal-close px-4 bg-transparent p-3 rounded-lg text-indigo-500 hover:bg-gray-100 hover:text-indigo-400 mr-2">Close</button>
+                        <button class="px-4 bg-indigo-500 p-3 rounded-lg text-white hover:bg-indigo-400">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDeMS6f5z9jdZ5fi68eJ3fyHhXejjU6D3U&libraries=places"></script>
+    <script src="static/modal.js"></script>
+    <script src="static/script.js"></script>
+
 </body>
