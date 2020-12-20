@@ -7,6 +7,7 @@
     "clean": "rimraf .parcel-cache dist",
     "build": "parcel build index.html --dist-dir dist/",
     "prebuild": "npm run clean",
+    "postbuild": "copyfiles CNAME dist/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@tailwindcss/forms": "^0.2.1",
     "autoprefixer": "^10.1.0",
+    "copyfiles": "^2.4.1",
     "parcel": "^2.0.0-nightly.476",
     "postcss": "^8.2.1",
     "postcss-cli": "^8.3.0",
