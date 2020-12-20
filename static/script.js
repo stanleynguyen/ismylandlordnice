@@ -38,8 +38,8 @@ function handleSearch(e) {
     fields: ['name', 'geometry', 'formatted_address', 'plus_code', 'place_id'],
   };
   const service = new google.maps.places.PlacesService(map);
-  Promise.all([promisifySearchQuery(service)(request), searchReviews()]).then(
-    ([results, reviews]) => {
+  Promise.all([promisifySearchQuery(service)(request), searchReviews()])
+    .then(([results, reviews]) => {
       const p = results[0];
       document.getElementById('address').textContent = p.formatted_address;
       document.querySelector('#review-form [name="formatted_address"]').value =
@@ -55,16 +55,19 @@ function handleSearch(e) {
       map.setZoom(17);
       loadingDone();
       document.getElementById('review').innerHTML = getReviewsHTML(reviews);
-    },
-  );
+    })
+    .catch(() => {
+      loadingDone('construction');
+    });
 }
 
 function showLoading() {
+  document.getElementById('construction-container').style.display = 'none';
   document.getElementById('map-container').style.display = 'none';
   document.getElementById('loading').style.display = 'block';
 }
-function loadingDone() {
-  document.getElementById('map-container').style.display = 'block';
+function loadingDone(whatToShow = 'map') {
+  document.getElementById(`${whatToShow}-container`).style.display = 'block';
   document.getElementById('loading').style.display = 'none';
 }
 
@@ -160,9 +163,34 @@ function handleSubmit(e) {
     ).value,
     lat: parseFloat(document.querySelector('#review-form [name="lat"]').value),
     lng: parseFloat(document.querySelector('#review-form [name="lng"]').value),
-    floor: document.querySelector('#review-form [name="floor"]').value,
+    // floor: document.querySelector('#review-form [name="floor"]').value,
     unit_number: document.querySelector('#review-form [name="unit_number"]')
       .value,
+    review_text: document.querySelector('#review-form [name="review_text"]')
+      .value,
   };
-  console.log(payload);
+  fetch(`${process.env.BACKEND}/api/reviews`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+    .then((resp) => Promise.all([resp.status, resp.json()]))
+    .then(([status, data]) => {
+      if (status > 299 || status < 200) {
+        throw new Error(data.message);
+      }
+    })
+    .catch((e) => showFormError(e.message));
+}
+
+function showFormError(msg) {
+  const errMsg = document.getElementById('error-message');
+  errMsg.textContent = msg;
+  errMsg.classList.remove('hidden');
+  setTimeout(() => {
+    errMsg.textContent = '';
+    errMsg.classList.add('hidden');
+  }, 5000);
 }
