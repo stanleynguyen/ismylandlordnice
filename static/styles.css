@@ -1,8 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Gothic&display=swap');
+
 body * {
   font-family: 'Nanum Gothic', sans-serif;
 }
@@ -229,4 +231,11 @@ svg {
 
 .st10 {
   fill: #808285;
+}
+
+button.hover\:underline:hover {
+  text-decoration: underline;
+}
+button.text-blue-500 {
+  color: rgba(59, 130, 246, 1);
 }

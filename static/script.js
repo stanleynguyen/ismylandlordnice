@@ -1,22 +1,70 @@
+/**
+ * Modal Stuffs
+ */
+
+function bindModalOpen() {
+  const openmodal = document.querySelectorAll('.modal-open');
+  for (let i = 0; i < openmodal.length; i++) {
+    openmodal[i].addEventListener('click', function (event) {
+      event.preventDefault();
+      toggleModal();
+    });
+  }
+}
+
+const overlay = document.querySelector('.modal-overlay');
+
+function bindModalClose() {
+  overlay.addEventListener('click', toggleModal);
+  const closemodal = document.querySelectorAll('.modal-close');
+  for (var i = 0; i < closemodal.length; i++) {
+    closemodal[i].addEventListener('click', toggleModal);
+  }
+
+  document.onkeydown = function (evt) {
+    evt = evt || window.event;
+    var isEscape = false;
+    if ('key' in evt) {
+      isEscape = evt.key === 'Escape' || evt.key === 'Esc';
+    } else {
+      isEscape = evt.keyCode === 27;
+    }
+    if (isEscape && document.body.classList.contains('modal-active')) {
+      toggleModal();
+    }
+  };
+}
+
+function toggleModal() {
+  const body = document.querySelector('body');
+  const modal = document.querySelector('.modal');
+  modal.classList.toggle('opacity-0');
+  modal.classList.toggle('pointer-events-none');
+  body.classList.toggle('modal-active');
+}
+
+/**
+ * Main application
+ */
+
 let map;
-let allReviews;
+let allReviews = [];
 
 document.addEventListener(
   'DOMContentLoaded',
   function () {
+    // wake the instance
+    fetch(`${process.env.BACKEND}`);
+    bindModalClose();
+    bindModalOpen();
     map = new google.maps.Map(document.getElementById('map'), {
       center: { lat: 1.3521, lng: 103.8198 },
       zoom: 11,
     });
     document.getElementById('search').addEventListener('submit', handleSearch);
-    document.querySelector('#search input').value = '60 Marine Drive';
-    document.querySelector('#search button').click();
     document
       .querySelector('#review-form')
       .addEventListener('submit', handleSubmit);
-    setTimeout(() => {
-      document.querySelector('.modal-open').click();
-    }, 1100);
   },
   false,
 );
@@ -38,23 +86,24 @@ function handleSearch(e) {
     fields: ['name', 'geometry', 'formatted_address', 'plus_code', 'place_id'],
   };
   const service = new google.maps.places.PlacesService(map);
-  Promise.all([promisifySearchQuery(service)(request), searchReviews()])
-    .then(([results, reviews]) => {
+  promisifySearchQuery(service)(request)
+    .then((results) => {
       const p = results[0];
+      const lng = p.geometry.location.lng();
+      const lat = p.geometry.location.lat();
       document.getElementById('address').textContent = p.formatted_address;
       document.querySelector('#review-form [name="formatted_address"]').value =
         p.formatted_address;
-      document.querySelector(
-        '#review-form [name="lng"]',
-      ).value = p.geometry.location.lng();
-      document.querySelector(
-        '#review-form [name="lat"]',
-      ).value = p.geometry.location.lat();
+      document.querySelector('#review-form [name="lng"]').value = lng;
+      document.querySelector('#review-form [name="lat"]').value = lat;
       createMarker(p);
       map.setCenter(p.geometry.location);
       map.setZoom(17);
-      loadingDone();
-      document.getElementById('review').innerHTML = getReviewsHTML(reviews);
+      return searchReviews(lng, lat);
+    })
+    .then((reviews) => {
+      updateReviewState(reviews);
+      loadingDone('map');
     })
     .catch(() => {
       loadingDone('construction');
@@ -71,41 +120,30 @@ function loadingDone(whatToShow = 'map') {
   document.getElementById('loading').style.display = 'none';
 }
 
-function searchReviews() {
+function searchReviews(lng, lat) {
   return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(
-        [
-          {
-            formatted_address: '60 Marine Dr, Singapore 440060',
-            review_text:
-              'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-            floor: 1,
-            unit_number: 234,
-          },
-          {
-            formatted_address: '60 Marine Dr, Singapore 440060',
-            review_text:
-              'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-            floor: 1,
-            unit_number: 234,
-          },
-          {
-            formatted_address:
-              '60 Marine Dr, Singapore 440060 <span> lolol </span>',
-            review_text:
-              'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.',
-            floor: 1,
-            unit_number: 234,
-          },
-        ].map((v) => {
-          for (const k in v) {
-            v[k] = escapeHTML(v[k]);
-          }
-          return v;
-        }),
-      );
-    }, 1000);
+    fetch(`${process.env.BACKEND}/api/reviews?lat=${lat}&lng=${lng}`)
+      .then((res) => [res.status, res.json()])
+      .then(([status, data]) => {
+        if (status > 299 || status < 200) {
+          return [];
+        }
+        return data;
+      })
+      .then((reviews) => {
+        resolve(
+          reviews.map((v) => {
+            for (const k in v) {
+              v[k] = escapeHTML(v[k]);
+            }
+            return v;
+          }),
+        );
+      })
+      .catch((e) => {
+        console.error(e);
+        resolve([]);
+      });
   });
 }
 
@@ -123,17 +161,23 @@ function promisifySearchQuery(service) {
   };
 }
 
-function getReviewsHTML(reviews) {
-  if (reviews.length === 0) {
-    return `
+function updateReviewState(reviews) {
+  allReviews = reviews;
+  renderReviewsHTML();
+}
+function renderReviewsHTML() {
+  if (allReviews.length === 0) {
+    document.getElementById('review').innerHTML = `
     <hr />
     <div class="review-entry">
-        <h4 class="text-md font-bold">No reviews nearby here yet.
-            <button class="modal-open no-underline hover:underline text-blue-500">Submit one?</button>
+        <h4 class="text-md">No reviews nearby here yet.
+            <button class="modal-open hover:underline text-blue-500">Submit one?</button>
         </h4>
     </div>`;
+    bindModalOpen();
+    return;
   }
-  return reviews
+  document.getElementById('review').innerHTML = allReviews
     .map(
       (r) => `
     <hr />
@@ -163,12 +207,18 @@ function handleSubmit(e) {
     ).value,
     lat: parseFloat(document.querySelector('#review-form [name="lat"]').value),
     lng: parseFloat(document.querySelector('#review-form [name="lng"]').value),
-    // floor: document.querySelector('#review-form [name="floor"]').value,
+    floor: document.querySelector('#review-form [name="floor"]').value,
     unit_number: document.querySelector('#review-form [name="unit_number"]')
       .value,
     review_text: document.querySelector('#review-form [name="review_text"]')
       .value,
   };
+
+  document
+    .querySelector('#review-form button[type="submit"]')
+    .setAttribute('disabled', true);
+  document.querySelector('#review-form button[type="submit"]').textContent =
+    'Submitting...';
   fetch(`${process.env.BACKEND}/api/reviews`, {
     method: 'POST',
     headers: {
@@ -181,8 +231,17 @@ function handleSubmit(e) {
       if (status > 299 || status < 200) {
         throw new Error(data.message);
       }
+      updateReviewState([data, ...allReviews]);
+      toggleModal();
     })
-    .catch((e) => showFormError(e.message));
+    .catch((e) => showFormError(e.message))
+    .finally(() => {
+      document
+        .querySelector('#review-form button[type="submit"]')
+        .removeAttribute('disabled');
+      document.querySelector('#review-form button[type="submit"]').textContent =
+        'Submit';
+    });
 }
 
 function showFormError(msg) {
