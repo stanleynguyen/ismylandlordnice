@@ -11,7 +11,7 @@ body * {
 
 .search-box {
   width: 30vw;
-  min-width: 400px;
+  min-width: 280px;
 }
 
 .header {
@@ -40,6 +40,7 @@ body * {
 .header .header-content h1 {
   font-family: 'Nanum Pen Script', cursive;
   font-size: 4rem;
+  text-align: center;
 }
 
 .header #map-container {
@@ -179,10 +180,6 @@ body * {
   animation: sleeping 3.5s ease-in-out forwards infinite;
   animation-delay: 1.3s;
   -website-animation-delay: 1.3s;
-}
-
-.containerr {
-  text-align: center;
 }
 
 svg {

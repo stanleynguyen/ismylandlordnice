@@ -5,10 +5,8 @@
 function bindModalOpen() {
   const openmodal = document.querySelectorAll('.modal-open');
   for (let i = 0; i < openmodal.length; i++) {
-    openmodal[i].addEventListener('click', function (event) {
-      event.preventDefault();
-      toggleModal();
-    });
+    openmodal[i].removeEventListener('click', toggleModal);
+    openmodal[i].addEventListener('click', toggleModal);
   }
 }
 
